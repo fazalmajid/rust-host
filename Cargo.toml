@@ -1,0 +1,12 @@
+[package]
+name = "native-client-host"
+version = "2.0.0"
+edition = "2021"
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+[profile.release]
+panic = "abort"
+strip = true
