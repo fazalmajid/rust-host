@@ -6,6 +6,88 @@ Chrome/Firefox native-messaging framing and installs under the same
 `com.add0n.node` manifest name, but supports a deliberately small, allowlisted
 command set instead of the original's general-purpose "run anything" API.
 
+## Installation
+
+### 1. Build
+
+Requires a Rust toolchain (`rustup` or your distribution's `cargo`):
+
+```sh
+cargo build --release
+```
+
+The binary is written to `target/release/native-client-host`. You can run
+it from there or copy it somewhere stable, e.g.
+`~/.local/bin/native-client-host`.
+
+### 2. Write the host manifest
+
+Browsers locate the host through a JSON manifest named `com.add0n.node.json`.
+Create one, setting `path` to the **absolute** path of the binary (no `~` or
+environment variables — browsers do not expand them).
+
+For Chrome / Chromium / Brave / Edge, list the extension IDs allowed to talk
+to the host in `allowed_origins`:
+
+```json
+{
+  "name": "com.add0n.node",
+  "description": "Native Client (Rust) for Native Messaging",
+  "path": "/home/you/.local/bin/native-client-host",
+  "type": "stdio",
+  "allowed_origins": ["chrome-extension://lmeddoobegbaiopohmpmmobpnpjifpii/"]
+}
+```
+
+For Firefox, use `allowed_extensions` with the extensions' add-on IDs
+instead of `allowed_origins`:
+
+```json
+{
+  "name": "com.add0n.node",
+  "description": "Native Client (Rust) for Native Messaging",
+  "path": "/home/you/.local/bin/native-client-host",
+  "type": "stdio",
+  "allowed_extensions": ["extension-id@example.com"]
+}
+```
+
+Only list the extensions you actually use — every ID in the manifest can
+invoke the host.
+
+### 3. Install the manifest
+
+Copy the manifest into your browser's per-user native-messaging directory.
+If the original Node host is installed, a `com.add0n.node.json` will already
+be there; back it up, then overwrite it.
+
+| Browser  | Linux                                              | macOS                                                                  |
+|----------|----------------------------------------------------|------------------------------------------------------------------------|
+| Chrome   | `~/.config/google-chrome/NativeMessagingHosts/`    | `~/Library/Application Support/Google/Chrome/NativeMessagingHosts/`    |
+| Chromium | `~/.config/chromium/NativeMessagingHosts/`         | `~/Library/Application Support/Chromium/NativeMessagingHosts/`         |
+| Brave    | `~/.config/BraveSoftware/Brave-Browser/NativeMessagingHosts/` | `~/Library/Application Support/BraveSoftware/Brave-Browser/NativeMessagingHosts/` |
+| Firefox  | `~/.mozilla/native-messaging-hosts/`               | `~/Library/Application Support/Mozilla/NativeMessagingHosts/`          |
+
+For example, on Linux with Chrome:
+
+```sh
+mkdir -p ~/.config/google-chrome/NativeMessagingHosts
+cp com.add0n.node.json ~/.config/google-chrome/NativeMessagingHosts/
+```
+
+On Windows, the manifest can live anywhere, and is registered by setting
+the default value of the registry key
+`HKEY_CURRENT_USER\Software\Google\Chrome\NativeMessagingHosts\com.add0n.node`
+(or `...\Mozilla\NativeMessagingHosts\com.add0n.node` for Firefox) to the
+manifest's full path.
+
+### 4. Verify
+
+Restart the browser (or reload the extension) and trigger the extension's
+action. If it reports that the native host is missing, check that the
+manifest's `path` is absolute and executable, and that the extension's ID
+appears in `allowed_origins` / `allowed_extensions`.
+
 ## Why replace it
 
 The Node host is invoked, unauthenticated beyond the browser's own
@@ -100,7 +182,7 @@ executable basenames. Resolution always searches the host process's *own*
 inherited `PATH` — a message can never supply a path, an argument list, an
 environment override, or a `PATH` prefix, closing findings (2) and (3).
 
-`src/commands.rs` dispatches only four commands:
+`src/commands.rs` dispatches only five commands:
 
 | Command   | Purpose                                                            |
 |-----------|---------------------------------------------------------------------|
