@@ -26,7 +26,7 @@ Browsers locate the host through a JSON manifest named `com.add0n.node.json`.
 Create one, setting `path` to the **absolute** path of the binary (no `~` or
 environment variables — browsers do not expand them).
 
-For Chrome / Chromium / Brave / Edge, list the extension IDs allowed to talk
+For Vivaldi / Chrome / Chromium / Brave / Edge, list the extension IDs allowed to talk
 to the host in `allowed_origins`:
 
 ```json
@@ -63,6 +63,7 @@ be there; back it up, then overwrite it.
 
 | Browser  | Linux                                              | macOS                                                                  |
 |----------|----------------------------------------------------|------------------------------------------------------------------------|
+| Vivaldi  | `~/.config/vivaldi/NativeMessagingHosts/`          | `~/Library/Application Support/Vivaldi/NativeMessagingHosts/`          |
 | Chrome   | `~/.config/google-chrome/NativeMessagingHosts/`    | `~/Library/Application Support/Google/Chrome/NativeMessagingHosts/`    |
 | Chromium | `~/.config/chromium/NativeMessagingHosts/`         | `~/Library/Application Support/Chromium/NativeMessagingHosts/`         |
 | Brave    | `~/.config/BraveSoftware/Brave-Browser/NativeMessagingHosts/` | `~/Library/Application Support/BraveSoftware/Brave-Browser/NativeMessagingHosts/` |
